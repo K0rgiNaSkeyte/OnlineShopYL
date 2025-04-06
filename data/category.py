@@ -2,8 +2,8 @@ import sqlalchemy
 from data.db_session import SqlAlchemyBase
 
 
-class Goods(SqlAlchemyBase):
-    __tablename__ = "goods"
+class Category(SqlAlchemyBase):
+    __tablename__ = "categories"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)

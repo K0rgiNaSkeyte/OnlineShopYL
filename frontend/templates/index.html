@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Главная страница - КОРЗИНОЧКА{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Популярные товары</h2>
+    <div class="row popular-products" id="popularProducts">
+        <!-- Товары будут загружаться через JavaScript -->
+        <!-- Пример одной карточки (можно удалить, если данные загружаются через JS) -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Товар-заглушка">
+                <div class="card-body">
+                    <h5 class="card-title">Пример товара</h5>
+                    <p class="card-text">Описание появится после загрузки данных</p>
+                    <p class="text-success">0 руб.</p>
+                    <button class="btn btn-primary">В корзину</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пагинация -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination" id="pagination">
+            <!-- Кнопки пагинации генерируются через JS -->
+        </ul>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Подключаем наш основной JS-файл -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- Инициализация при загрузке страницы -->
+<script>
+    // Можно добавить специфичную инициализацию для этой страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Страница загружена!');
+    });
+</script>
+{% endblock %}
