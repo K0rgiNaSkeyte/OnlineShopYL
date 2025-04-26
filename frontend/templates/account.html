@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет | Корзиночка{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Личный кабинет</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <h3>{{ current_user.name }}</h3>
+            <p class="text-muted">{{ current_user.email }}</p>
+
+            <h4 class="mt-4">Мои заказы</h4>
+            <div class="list-group">
+                <!-- Список заказов будет здесь -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
