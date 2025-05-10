@@ -1,3 +1,4 @@
 sqlalchemy
-flask
-datetime
+flask-sqlalchemy
+flask~=3.1.0
+datetime~=5.5
