@@ -1,0 +1,112 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Боковое меню -->
+        <div class="col-md-3 mb-4">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active">Профиль</a>
+                <a href="/orders" class="list-group-item list-group-item-action">Мои заказы</a>
+                <a href="/settings" class="list-group-item list-group-item-action">Настройки</a>
+                <a href="/logout" class="list-group-item list-group-item-action text-danger">Выход</a>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Личные данные</h4>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">Имя</label>
+                                <input type="text" class="form-control" id="firstName" value="Иван">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Фамилия</label>
+                                <input type="text" class="form-control" id="lastName" value="Иванов">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" value="user@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Телефон</label>
+                            <input type="tel" class="form-control" id="phone" value="+7 (900) 123-45-67">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Адрес доставки</label>
+                            <textarea class="form-control" id="address"
+                                      rows="2">г. Москва, ул. Примерная, д. 1, кв. 1</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">История заказов</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>№ заказа</th>
+                                <th>Дата</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>#12345</td>
+                                <td>15.05.2023</td>
+                                <td>24 990 ₽</td>
+                                <td><span class="badge bg-success">Доставлен</span></td>
+                                <td><a href="/order/12345" class="btn btn-sm btn-outline-primary">Подробнее</a></td>
+                            </tr>
+                            <tr>
+                                <td>#12344</td>
+                                <td>10.05.2023</td>
+                                <td>15 490 ₽</td>
+                                <td><span class="badge bg-warning text-dark">В обработке</span></td>
+                                <td><a href="/order/12344" class="btn btn-sm btn-outline-primary">Подробнее</a></td>
+                            </tr>
+                            <tr>
+                                <td>#12340</td>
+                                <td>01.05.2023</td>
+                                <td>32 990 ₽</td>
+                                <td><span class="badge bg-info">В пути</span></td>
+                                <td><a href="/order/12340" class="btn btn-sm btn-outline-primary">Подробнее</a></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Назад</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Вперед</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
