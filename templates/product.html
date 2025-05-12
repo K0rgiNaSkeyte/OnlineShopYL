@@ -1,0 +1,164 @@
+{% extends "base_auth.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/catalog">Каталог</a></li>
+            <li class="breadcrumb-item"><a href="/catalog?category={{ product.category_id }}">{{ product.category }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Галерея изображений -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <img src="{{ product.main_image }}" class="card-img-top p-3" alt="{{ product.name }}" id="mainImage">
+            </div>
+            <div class="d-flex thumbnails">
+                {% for image in product.images %}
+                <div class="me-2 cursor-pointer" onclick="document.getElementById('mainImage').src='{{ image }}'">
+                    <img src="{{ image }}" alt="Thumbnail" class="img-thumbnail" width="80">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Информация о товаре -->
+        <div class="col-md-6">
+            <h2 class="mb-3">{{ product.name }}</h2>
+            
+            <div class="d-flex align-items-center mb-3">
+                <div class="me-3">
+                    {% for star in range(5) %}
+                        {% if loop.index <= product.rating|int %}
+                            <i class="bi bi-star-fill text-warning"></i>
+                        {% else %}
+                            <i class="bi bi-star text-warning"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span class="ms-1 text-muted">({{ product.reviews_count }} отзывов)</span>
+                </div>
+                <span class="badge bg-success">{{ product.in_stock }} в наличии</span>
+            </div>
+
+            <div class="mb-4">
+                {% if product.old_price %}
+                <div class="text-muted text-decoration-line-through mb-1">{{ product.old_price }} ₽</div>
+                {% endif %}
+                <div class="fs-3 fw-bold text-danger">{{ product.price }} ₽</div>
+                {% if product.discount %}
+                <span class="badge bg-danger">-{{ product.discount }}%</span>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="input-group" style="width: 150px;">
+                        <button class="btn btn-outline-secondary minus-btn" type="button">-</button>
+                        <input type="text" class="form-control text-center quantity-input" value="1">
+                        <button class="btn btn-outline-secondary plus-btn" type="button">+</button>
+                    </div>
+                    <button class="btn btn-primary ms-3" id="addToCart">
+                        <i class="bi bi-cart-plus me-2"></i>В корзину
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Характеристики</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        {% for spec in product.specifications %}
+                        <tr>
+                            <td class="text-muted" width="40%">{{ spec.name }}</td>
+                            <td>{{ spec.value }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Описание и отзывы -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">Описание</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">Отзывы ({{ product.reviews_count }})</button>
+                </li>
+            </ul>
+            <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
+                    {{ product.description|safe }}
+                </div>
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    {% if product.reviews %}
+                    <div class="mb-4">
+                        {% for review in product.reviews %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h6 class="mb-0">{{ review.author }}</h6>
+                                    <small class="text-muted">{{ review.date }}</small>
+                                </div>
+                                <div class="mb-2">
+                                    {% for star in range(5) %}
+                                        {% if loop.index <= review.rating %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p class="mb-0">{{ review.text }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <p class="text-muted">Пока нет отзывов о товаре</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Форма добавления отзыва -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Оставить отзыв</h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Ваша оценка</label>
+                                    <div class="rating-stars">
+                                        {% for i in range(1, 6) %}
+                                        <i class="bi bi-star-fill star-rating" data-value="{{ i }}" style="cursor: pointer; font-size: 1.5rem;"></i>
+                                        {% endfor %}
+                                        <input type="hidden" name="rating" id="ratingValue" value="0">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="reviewText" class="form-label">Комментарий</label>
+                                    <textarea class="form-control" id="reviewText" rows="3" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -78,6 +78,25 @@
         .bg-canceled {
             background-color: #dc3545;
         }
+        .thumbnails img {
+        transition: all 0.2s;
+        }
+        .thumbnails img:hover {
+            border-color: #0d6efd;
+        }
+        .star-rating {
+            color: #e4e5e9;
+        }
+        .star-rating.active {
+            color: #ffc107;
+        }
+        .quantity-input {
+            max-width: 50px;
+            text-align: center;
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -133,5 +152,32 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Обработка рейтинга в отзывах
+    document.querySelectorAll('.star-rating').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            document.getElementById('ratingValue').value = value;
+
+            // Подсветка звезд
+            document.querySelectorAll('.star-rating').forEach(s => {
+                s.classList.toggle('active', s.getAttribute('data-value') <= value);
+            });
+        });
+    });
+
+    // Управление количеством товара
+    document.querySelector('.minus-btn').addEventListener('click', function() {
+        const input = document.querySelector('.quantity-input');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    });
+
+    document.querySelector('.plus-btn').addEventListener('click', function() {
+        const input = document.querySelector('.quantity-input');
+        input.value = parseInt(input.value) + 1;
+    });
+</script>
 </body>
 </html>
