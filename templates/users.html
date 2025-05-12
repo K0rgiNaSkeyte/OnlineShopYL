@@ -1,0 +1,99 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Управление пользователями{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Пользователи</h2>
+    <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Поиск по email или имени...">
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Список пользователей</h5>
+        <div>
+            <select class="form-select form-select-sm" style="width: 150px;">
+                <option selected>Все пользователи</option>
+                <option>Администраторы</option>
+                <option>Покупатели</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th>Регистрация</th>
+                        <th>Роль</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Алексей Смирнов</td>
+                        <td>alex@example.com</td>
+                        <td>+7 (900) 123-45-67</td>
+                        <td>12.04.2023</td>
+                        <td>
+                            <span class="badge bg-primary">Администратор</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/admin/users/1" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Другие пользователи -->
+                    <tr>
+                        <td>2</td>
+                        <td>Мария Иванова</td>
+                        <td>maria@example.com</td>
+                        <td>+7 (900) 765-43-21</td>
+                        <td>05.05.2023</td>
+                        <td>
+                            <span class="badge bg-secondary">Покупатель</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/admin/users/2" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">Назад</a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Вперед</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
