@@ -1,18 +1,24 @@
 import click
+from flask.cli import with_appcontext
 from app.extensions import db
-from models import User, Product, Category, Review, Order, OrderItem
+from app.models import User, Product, Category, Review, Order, OrderItem
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta
 
 
-def init_db_cli(app):
+def register_commands(app):
+    """Регистрация CLI-команд"""
+
     @app.cli.command('init-db')
     @click.confirmation_option(prompt='Вы уверены? Это удалит все данные!')
+    @with_appcontext
     def init_db():
         """Инициализация БД с тестовыми данными"""
+        # Удаление и создание таблиц
         db.drop_all()
         db.create_all()
 
+        # Создание тестовых данных
         admin = User(
             email='admin@example.com',
             password_hash=generate_password_hash('admin123'),
@@ -28,34 +34,39 @@ def init_db_cli(app):
             phone='+79007654321'
         )
 
-        electronics = Category(name='Электроника', slug='electronics')
-        books = Category(name='Книги', slug='books')
+        # Категории
+        categories = [
+            Category(name='Электроника', slug='electronics'),
+            Category(name='Книги', slug='books')
+        ]
 
+        # Товары
         products = [
             Product(
                 name='Смартфон X',
                 price=79990,
                 old_price=89990,
                 description='Флагманский смартфон',
-                category=electronics,
+                category=categories[0],
                 image_url='/static/images/phone.jpg'
             ),
             Product(
                 name='Ноутбук Pro',
                 price=129990,
                 description='Мощный ноутбук для работы',
-                category=electronics,
+                category=categories[0],
                 image_url='/static/images/laptop.jpg'
             ),
             Product(
                 name='Книга по Python',
                 price=2490,
                 description='Изучение Python для начинающих',
-                category=books,
+                category=categories[1],
                 image_url='/static/images/book.jpg'
             )
         ]
 
+        # Отзывы
         reviews = [
             Review(
                 product=products[0],
@@ -66,6 +77,7 @@ def init_db_cli(app):
             )
         ]
 
+        # Заказы
         order = Order(
             user=user,
             total_price=79990,
@@ -82,11 +94,10 @@ def init_db_cli(app):
             price=79990
         )
 
-        db.session.add_all([admin, user, electronics, books] + products + reviews)
+        # Сохранение всех данных
+        db.session.add_all([admin, user] + categories + products + reviews)
         db.session.add(order)
         db.session.add(order_item)
-
         db.session.commit()
-        click.echo('База данных инициализирована с тестовыми данными')
 
-    return init_db
+        click.echo('База данных инициализирована с тестовыми данными')

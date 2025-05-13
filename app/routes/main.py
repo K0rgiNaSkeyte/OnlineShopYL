@@ -1,5 +1,8 @@
 from flask import render_template
 from . import main_bp
+from flask import Blueprint
+
+bp = Blueprint('main', __name__)
 
 
 @main_bp.route('/')

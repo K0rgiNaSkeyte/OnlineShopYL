@@ -1,7 +1,9 @@
-from flask import render_template, request, abort
+from flask import render_template, request, abort, Blueprint
 from flask_login import login_required
 from app.models import Product, Category
 from . import main_bp
+
+bp = Blueprint('products', __name__, template_folder='templates')
 
 
 @main_bp.route('/products')

@@ -8,7 +8,7 @@ class Order(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    total = db.Column(db.Float, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='created')  # created, paid, shipped, completed, cancelled
     payment_method = db.Column(db.String(50))
     shipping_address = db.Column(db.Text)
@@ -16,7 +16,8 @@ class Order(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Связи
-    items = db.relationship('OrderItem', backref='order', lazy=True, cascade='all, delete-orphan')
+    user = db.relationship('User', back_populates='orders')
+    items = db.relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
 
     def cancel(self):
         """Отмена заказа"""
@@ -34,3 +35,6 @@ class OrderItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)  # Фиксированная цена на момент заказа
+
+    order = db.relationship('Order', back_populates='items')
+    product = db.relationship('Product', back_populates='order_items')

@@ -9,5 +9,6 @@ wtforms~=3.2.1
 flask_mail
 flask_assets
 flask_restful
+flask-migrate
 requests
 Pillow

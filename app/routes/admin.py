@@ -1,8 +1,10 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, Blueprint
 from flask_login import login_required, current_user
 from app.decorators import admin_required
 from app.models import Product, Order, User
 from . import admin_bp
+
+bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
 @admin_bp.route('/')

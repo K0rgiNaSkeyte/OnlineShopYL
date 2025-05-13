@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
+from app import db
 import os
 
-account_bp = Blueprint('account', __name__, url_prefix='/account')
+bp = Blueprint('account', __name__, url_prefix='/account')
 
 
-@account_bp.route('/profile', methods=['GET', 'POST'])
+@bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     form = ProfileForm(obj=current_user)
@@ -46,7 +47,7 @@ def profile():
     return render_template('account/profile.html', form=form)
 
 
-@account_bp.route('/orders')
+@bp.route('/orders')
 @login_required
 def orders():
     page = request.args.get('page', 1, type=int)
@@ -56,14 +57,14 @@ def orders():
     return render_template('account/orders.html', orders=orders)
 
 
-@account_bp.route('/orders/<int:order_id>')
+@bp.route('/orders/<int:order_id>')
 @login_required
 def order_details(order_id):
     order = Order.query.filter_by(id=order_id, user_id=current_user.id).first_or_404()
     return render_template('account/order_details.html', order=order)
 
 
-@account_bp.route('/change-password', methods=['GET', 'POST'])
+@bp.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
     form = ChangePasswordForm()

@@ -14,6 +14,9 @@ class Review(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_approved = db.Column(db.Boolean, default=None)  # None - на модерации, True/False
 
+    product = db.relationship('Product', back_populates='reviews')
+    user = db.relationship('User', back_populates='reviews')
+
     __table_args__ = (
         db.CheckConstraint('rating >= 1 AND rating <= 5', name='check_rating_bounds'),
     )

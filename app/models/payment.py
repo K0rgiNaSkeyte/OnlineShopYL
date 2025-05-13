@@ -14,7 +14,7 @@ class Payment(db.Model):
     transaction_id = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    order = db.relationship('Order', backref='payments')
+    order = db.relationship('Order', back_populates='payments')
 
     def mark_as_paid(self, transaction_id):
         """Отметка платежа как успешного"""

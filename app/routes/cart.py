@@ -1,7 +1,9 @@
-from flask import jsonify, request
+from flask import jsonify, request, Blueprint
 from flask_login import login_required, current_user
 from app.models import Cart, CartItem, Product
 from . import api_bp
+
+bp = Blueprint('cart', __name__, template_folder='templates')
 
 
 @api_bp.route('/cart', methods=['GET'])

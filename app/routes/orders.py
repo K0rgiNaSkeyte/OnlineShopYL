@@ -1,8 +1,10 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, Blueprint
 from flask_login import login_required, current_user
 from app.models import Order, Cart
 from app.forms import CheckoutForm
 from . import main_bp
+
+bp = Blueprint('orders', __name__, template_folder='templates')
 
 
 @main_bp.route('/checkout', methods=['GET', 'POST'])

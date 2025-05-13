@@ -12,7 +12,8 @@ class Cart(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Связи
-    items = db.relationship('CartItem', backref='cart', lazy=True, cascade='all, delete-orphan')
+    user = db.relationship('User', back_populates='cart')
+    items = db.relationship('CartItem', back_populates='cart', cascade='all, delete-orphan')
 
     def get_total(self):
         """Расчет общей суммы корзины"""
@@ -27,6 +28,9 @@ class CartItem(db.Model):
     cart_id = db.Column(db.Integer, db.ForeignKey('carts.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1)
+
+    cart = db.relationship('Cart', back_populates='items')
+    product = db.relationship('Product', back_populates='cart_items')
 
     def increase(self, amount=1):
         """Увеличение количества"""

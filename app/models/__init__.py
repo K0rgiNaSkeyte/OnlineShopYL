@@ -2,6 +2,22 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import db
+from .review import Review
+from .order import Order, OrderItem
+from .log import AdminLog
+from .cart import Cart, CartItem
+
+__all__ = [
+    'User',
+    'Product',
+    'Category',
+    'Review',
+    'Order',
+    'OrderItem',
+    "AdminLog",
+    'Cart',
+    'CartItem'
+]
 
 
 class User(UserMixin, db.Model):
@@ -18,9 +34,9 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime)
 
     # Связи
-    orders = db.relationship('Order', backref='user', lazy=True)
-    reviews = db.relationship('Review', backref='user', lazy=True)
-    cart = db.relationship('Cart', backref='user', uselist=False, lazy=True)
+    orders = db.relationship('Order', back_populates='user')
+    reviews = db.relationship('Review', back_populates='user')
+    cart = db.relationship('Cart', back_populates='user', uselist=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -45,9 +61,10 @@ class Product(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Связи
-    reviews = db.relationship('Review', backref='product', lazy=True, cascade='all, delete-orphan')
-    order_items = db.relationship('OrderItem', backref='product', lazy=True)
-    cart_items = db.relationship('CartItem', backref='product', lazy=True)
+    reviews = db.relationship('Review', back_populates='product', cascade='all, delete-orphan')
+    order_items = db.relationship('OrderItem', back_populates='product')
+    cart_items = db.relationship('CartItem', back_populates='product')
+    category = db.relationship('Category', back_populates='products')
 
     def update_rating(self):
         """Пересчет рейтинга на основе отзывов"""
@@ -63,4 +80,4 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     slug = db.Column(db.String(50), unique=True)
-    products = db.relationship('Product', backref='category', lazy=True)
+    products = db.relationship('Product', back_populates='category')
