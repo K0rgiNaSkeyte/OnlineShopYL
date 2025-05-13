@@ -3,7 +3,7 @@ from flask import Flask, render_template
 app = Flask(__name__)
 
 
-@app.route("/")
+@app.route("/home")
 def about():
     return render_template("index_auth.html")
 
@@ -73,6 +73,11 @@ def product():
 @app.route("/register")
 def register():
     return render_template("register.html")
+
+
+@app.route("/")
+def home_guest():
+    return render_template("index.html")
 
 
 @app.route("/catalog")
