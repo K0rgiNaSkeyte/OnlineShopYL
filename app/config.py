@@ -32,6 +32,11 @@ class Config:
     PRODUCTS_PER_PAGE = 12
     ORDERS_PER_PAGE = 10
 
+    # Админ-панель
+    ADMIN_PANEL_ITEMS_PER_PAGE = 20
+    ADMIN_ALLOWED_EXTENSIONS = {'jpg', 'png', 'jpeg'}
+    ADMIN_UPLOAD_FOLDER = 'static/uploads'
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
