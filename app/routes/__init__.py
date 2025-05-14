@@ -7,8 +7,7 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 
 # Импорт всех роутов
-from . import main, auth, products, orders, cart, admin, api
-
+from . import main, auth, products, orders, cart, admin, account
 
 def register_blueprints(app):
     """Регистрация всех роутов в приложении"""
@@ -16,3 +15,7 @@ def register_blueprints(app):
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
+    
+    # Регистрация API ресурсов
+    from app.api.routes import register_api_resources
+    register_api_resources()

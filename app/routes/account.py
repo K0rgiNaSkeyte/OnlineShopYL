@@ -1,15 +1,24 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash, generate_password_hash
+from app.models import User, UserProfile, Order
+from app.forms import ProfileForm, ChangePasswordForm
 from app import db
 import os
 
 bp = Blueprint('account', __name__, url_prefix='/account')
 
+@bp.route('/')
+@login_required
+def index():
+    """Главная страница личного кабинета"""
+    return render_template('account.html')
 
 @bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    """Страница профиля пользователя"""
     form = ProfileForm(obj=current_user)
 
     if form.validate_on_submit():
@@ -44,38 +53,38 @@ def profile():
             current_app.logger.error(f'Error updating profile: {str(e)}')
             flash('Ошибка при обновлении профиля', 'danger')
 
-    return render_template('account/profile.html', form=form)
-
+    return render_template('account.html', form=form)
 
 @bp.route('/orders')
 @login_required
 def orders():
+    """Страница заказов пользователя"""
     page = request.args.get('page', 1, type=int)
     orders = Order.query.filter_by(user_id=current_user.id) \
         .order_by(Order.created_at.desc()) \
         .paginate(page=page, per_page=10)
-    return render_template('account/orders.html', orders=orders)
-
+    return render_template('orders.html', orders=orders)
 
 @bp.route('/orders/<int:order_id>')
 @login_required
 def order_details(order_id):
+    """Страница деталей заказа"""
     order = Order.query.filter_by(id=order_id, user_id=current_user.id).first_or_404()
-    return render_template('account/order_details.html', order=order)
-
+    return render_template('order.html', order=order)
 
 @bp.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
+    """Страница изменения пароля"""
     form = ChangePasswordForm()
 
     if form.validate_on_submit():
-        if current_user.check_password(form.current_password.data):
-            current_user.set_password(form.new_password.data)
+        if check_password_hash(current_user.password_hash, form.current_password.data):
+            current_user.password_hash = generate_password_hash(form.new_password.data)
             db.session.commit()
             flash('Пароль успешно изменен', 'success')
             return redirect(url_for('account.profile'))
         else:
             flash('Неверный текущий пароль', 'danger')
 
-    return render_template('account/change_password.html', form=form)
+    return render_template('change_password.html', form=form)

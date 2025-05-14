@@ -1,31 +1,32 @@
 from flask import Flask
 from config import Config
 from app.extensions import db, migrate, login_manager
-
+import os
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, 
+                template_folder=os.path.join('template'),
+                static_folder=os.path.join('static'))
     app.config.from_object(config_class)
 
     # Инициализация расширений
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    
+    # Настройка login_manager
+    from app.models import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице.'
+    login_manager.login_message_category = 'info'
 
     # Регистрация blueprints
-    from app.routes.main import bp as main_bp
-    from app.routes.auth import bp as auth_bp
-    from app.routes.products import bp as products_bp
-    from app.routes.orders import bp as orders_bp
-    from app.routes.admin import bp as admin_bp
-    from app.routes.account import bp as account_bp
-
-    app.register_blueprint(main_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(products_bp)
-    app.register_blueprint(orders_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(account_bp)
+    from app.routes import register_blueprints
+    register_blueprints(app)
 
     # CLI команды
     from app.commands import register_commands

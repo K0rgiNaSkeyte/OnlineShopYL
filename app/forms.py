@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, TelField, SelectField, TextAreaField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, TelField, SelectField, TextAreaField, BooleanField, DecimalField, IntegerField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, ValidationError
 from app.models import db, User, Product, Order, Review, AdminLog
 from app import db
@@ -97,6 +97,11 @@ class CheckoutForm(FlaskForm):
         ('cash', 'Наличные при получении'),
         ('invoice', 'Оплата по счету')
     ], validators=[DataRequired()])
+    
+    shipping_method = SelectField('Способ доставки', choices=[
+        ('standard', 'Стандартная доставка'),
+        ('express', 'Экспресс-доставка')
+    ], validators=[DataRequired()])
 
     notes = TextAreaField('Примечания', validators=[
         Optional(),
@@ -108,9 +113,21 @@ class CheckoutForm(FlaskForm):
 
 class ProductForm(FlaskForm):
     name = StringField('Название', validators=[DataRequired()])
-    price = StringField('Цена', validators=[DataRequired()])
-    description = TextAreaField('Описание')
-    category = SelectField('Категория', coerce=int, validators=[DataRequired()])
+    description = TextAreaField('Описание', validators=[DataRequired()])
+    price = DecimalField('Цена', validators=[DataRequired()])
+    category_id = SelectField('Категория', coerce=int, validators=[DataRequired()])
+    stock = IntegerField('Количество на складе', validators=[DataRequired()])
+    image = FileField('Изображение', validators=[
+        Optional(),
+        FileAllowed(['jpg', 'png', 'jpeg'], 'Только изображения')
+    ])
+    submit = SubmitField('Сохранить')
+
+
+class CategoryForm(FlaskForm):
+    name = StringField('Название категории', validators=[DataRequired()])
+    description = TextAreaField('Описание', validators=[Optional()])
+    parent_id = SelectField('Родительская категория', coerce=int, validators=[Optional()], default=0)
     submit = SubmitField('Сохранить')
 
 
