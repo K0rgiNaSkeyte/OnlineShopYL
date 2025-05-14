@@ -19,41 +19,8 @@ def index():
 @login_required
 def profile():
     """Страница профиля пользователя"""
-    form = ProfileForm(obj=current_user)
-
-    if form.validate_on_submit():
-        try:
-            # Обновление основных данных
-            current_user.name = form.name.data
-            current_user.phone = form.phone.data
-
-            # Обработка аватара
-            if form.avatar.data:
-                filename = secure_filename(form.avatar.data.filename)
-                avatar_path = os.path.join(
-                    current_app.config['UPLOAD_FOLDER'],
-                    'avatars',
-                    f'user_{current_user.id}_{filename}'
-                )
-                form.avatar.data.save(avatar_path)
-                if not current_user.profile:
-                    current_user.profile = UserProfile(user_id=current_user.id)
-                current_user.profile.avatar = avatar_path
-
-            # Обновление адреса
-            if form.address.data:
-                if not current_user.profile:
-                    current_user.profile = UserProfile(user_id=current_user.id)
-                current_user.profile.address = form.address.data
-
-            db.session.commit()
-            flash('Профиль успешно обновлен', 'success')
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f'Error updating profile: {str(e)}')
-            flash('Ошибка при обновлении профиля', 'danger')
-
-    return render_template('account.html', form=form)
+    # Просто отображаем профиль без возможности редактирования
+    return render_template('account.html')
 
 @bp.route('/orders')
 @login_required
@@ -71,20 +38,3 @@ def order_details(order_id):
     """Страница деталей заказа"""
     order = Order.query.filter_by(id=order_id, user_id=current_user.id).first_or_404()
     return render_template('order.html', order=order)
-
-@bp.route('/change-password', methods=['GET', 'POST'])
-@login_required
-def change_password():
-    """Страница изменения пароля"""
-    form = ChangePasswordForm()
-
-    if form.validate_on_submit():
-        if check_password_hash(current_user.password_hash, form.current_password.data):
-            current_user.password_hash = generate_password_hash(form.new_password.data)
-            db.session.commit()
-            flash('Пароль успешно изменен', 'success')
-            return redirect(url_for('account.profile'))
-        else:
-            flash('Неверный текущий пароль', 'danger')
-
-    return render_template('change_password.html', form=form)

@@ -15,6 +15,7 @@ def register_blueprints(app):
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(account.bp)  # Регистрируем blueprint для аккаунта
     
     # Регистрация API ресурсов
     from app.api.routes import register_api_resources

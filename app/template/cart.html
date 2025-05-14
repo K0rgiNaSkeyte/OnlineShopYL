@@ -25,7 +25,7 @@
                             </thead>
                             <tbody>
                             {% for item in cart_items %}
-                            <tr>
+                            <tr data-item-id="{{ item.id }}">
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <img src="{{ item.image }}" alt="{{ item.name }}"
@@ -47,7 +47,7 @@
                                 </td>
                                 <td class="align-middle">{{ item.total }} ₽</td>
                                 <td class="align-middle">
-                                    <button class="btn btn-sm btn-outline-danger remove-btn">
+                                    <button class="btn btn-sm btn-outline-danger remove-btn" data-item-id="{{ item.id }}">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </td>
@@ -63,7 +63,7 @@
                 <a href="/catalog" class="btn btn-outline-primary">
                     <i class="bi bi-arrow-left me-2"></i>Продолжить покупки
                 </a>
-                <button class="btn btn-danger clear-cart-btn">
+                <button class="btn btn-danger clear-cart-btn" id="clear-cart">
                     Очистить корзину
                 </button>
             </div>
@@ -116,4 +116,103 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Удаление товара из корзины
+    const removeButtons = document.querySelectorAll('.remove-btn');
+    if (removeButtons.length > 0) {
+        removeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-item-id');
+                if (confirm('Вы уверены, что хотите удалить этот товар из корзины?')) {
+                    removeCartItem(itemId);
+                }
+            });
+        });
+    }
+    
+    // Очистка корзины
+    const clearCartButton = document.getElementById('clear-cart');
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', function() {
+            if (confirm('Вы уверены, что хотите очистить корзину?')) {
+                clearCart();
+            }
+        });
+    }
+    
+    // Функция удаления товара из корзины
+    function removeCartItem(itemId) {
+        fetch(`/cart/remove/${itemId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Удаляем строку из таблицы
+                const row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+                if (row) row.remove();
+                
+                // Обновляем счетчик корзины
+                updateCartCount(data.cart_count);
+                
+                // Если корзина пуста, перезагружаем страницу
+                if (data.cart_count === 0) {
+                    window.location.reload();
+                }
+            } else {
+                alert('Ошибка при удалении товара из корзины');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении товара из корзины');
+        });
+    }
+    
+    // Функция очистки корзины
+    function clearCart() {
+        fetch('/cart/clear', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Перезагружаем страницу
+                window.location.reload();
+            } else {
+                alert('Ошибка при очистке корзины');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при очистке корзины');
+        });
+    }
+    
+    // Функция обновления счетчика корзины
+    function updateCartCount(count) {
+        const cartBadge = document.querySelector('.badge.bg-danger');
+        if (count > 0) {
+            if (cartBadge) {
+                cartBadge.textContent = count;
+            } else {
+                const cartText = document.querySelector('.btn-outline-primary.me-3');
+                cartText.innerHTML = 'Корзина <span class="badge bg-danger ms-1">' + count + '</span>';
+            }
+        } else {
+            if (cartBadge) {
+                cartBadge.remove();
+            }
+        }
+    }
+});
+</script>
 {% endblock %}

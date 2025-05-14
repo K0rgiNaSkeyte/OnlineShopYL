@@ -7,8 +7,19 @@
     <div class="row">
         <div class="col-md-3 mb-4">
             <div class="list-group">
-                <a href="#" class="list-group-item list-group-item-action active">Профиль</a>
-                <a href="/logout" class="list-group-item list-group-item-action text-danger">Выход</a>
+                <a href="{{ url_for('account.index') }}" class="list-group-item list-group-item-action active">Профиль</a>
+                <a href="{{ url_for('account.orders') }}" class="list-group-item list-group-item-action">Мои заказы</a>
+                <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action text-danger">Выход</a>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Нужна помощь?</h5>
+                    <p class="card-text">Свяжитесь с нашей поддержкой в Telegram</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-telegram"></i> Поддержка
+                    </a>
+                </div>
             </div>
         </div>
         <div class="col-md-9">
@@ -17,31 +28,47 @@
                     <h4 class="mb-0">Личные данные</h4>
                 </div>
                 <div class="card-body">
-                    <form>
+                    <form method="POST" action="{{ url_for('account.profile') }}" enctype="multipart/form-data">
+                        {{ form.hidden_tag() if form }}
                         <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="firstName" class="form-label">Имя</label>
-                                <input type="text" class="form-control" id="firstName" value="Иван">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="lastName" class="form-label">Фамилия</label>
-                                <input type="text" class="form-control" id="lastName" value="Иванов">
+                            <div class="col-md-12">
+                                <label for="name" class="form-label">Имя</label>
+                                {% if form %}
+                                    {{ form.name(class="form-control", id="name") }}
+                                    {% for error in form.name.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                {% else %}
+                                    <input type="text" class="form-control" id="name" value="{{ current_user.name }}">
+                                {% endif %}
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" value="user@example.com">
+                            <input type="email" class="form-control" id="email" value="{{ current_user.email }}" readonly>
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">Телефон</label>
-                            <input type="tel" class="form-control" id="phone" value="+7 (900) 123-45-67">
+                            {% if form %}
+                                {{ form.phone(class="form-control", id="phone") }}
+                                {% for error in form.phone.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            {% else %}
+                                <input type="tel" class="form-control" id="phone" value="{{ current_user.phone }}">
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label for="address" class="form-label">Адрес доставки</label>
-                            <textarea class="form-control" id="address"
-                                      rows="2">г. Москва, ул. Примерная, д. 1, кв. 1</textarea>
+                            {% if form %}
+                                {{ form.address(class="form-control", id="address", rows="2") }}
+                                {% for error in form.address.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            {% else %}
+                                <textarea class="form-control" id="address" rows="2">{{ current_user.profile.address if current_user.profile else '' }}</textarea>
+                            {% endif %}
                         </div>
-                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
                     </form>
                 </div>
             </div>

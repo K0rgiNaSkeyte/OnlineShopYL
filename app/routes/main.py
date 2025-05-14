@@ -33,3 +33,9 @@ def login_redirect():
 def register_redirect():
     """Перенаправление на страницу регистрации"""
     return redirect(url_for('auth.register'))
+
+
+@main_bp.route('/account')
+def account_redirect():
+    """Перенаправление на страницу личного кабинета"""
+    return redirect(url_for('account.index'))

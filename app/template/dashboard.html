@@ -10,8 +10,8 @@
         <div class="card stat-card bg-primary text-white">
             <div class="card-body">
                 <h5 class="card-title">Заказы</h5>
-                <h2 class="mb-0">1,024</h2>
-                <small>+12% за месяц</small>
+                <h2 class="mb-0">{{ stats.orders }}</h2>
+                <small>Всего заказов</small>
             </div>
         </div>
     </div>
@@ -19,8 +19,8 @@
         <div class="card stat-card bg-success text-white">
             <div class="card-body">
                 <h5 class="card-title">Доход</h5>
-                <h2 class="mb-0">₽542,890</h2>
-                <small>+8% за месяц</small>
+                <h2 class="mb-0">₽{{ stats.revenue|default('0') }}</h2>
+                <small>Общий доход</small>
             </div>
         </div>
     </div>
@@ -28,8 +28,8 @@
         <div class="card stat-card bg-warning text-dark">
             <div class="card-body">
                 <h5 class="card-title">Товары</h5>
-                <h2 class="mb-0">287</h2>
-                <small>5 новых</small>
+                <h2 class="mb-0">{{ stats.products }}</h2>
+                <small>Всего товаров</small>
             </div>
         </div>
     </div>
@@ -37,8 +37,8 @@
         <div class="card stat-card bg-info text-white">
             <div class="card-body">
                 <h5 class="card-title">Пользователи</h5>
-                <h2 class="mb-0">3,456</h2>
-                <small>24 новых</small>
+                <h2 class="mb-0">{{ stats.users }}</h2>
+                <small>Всего пользователей</small>
             </div>
         </div>
     </div>
@@ -62,13 +62,20 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>#1024</td>
-                                <td>Иван Петров</td>
-                                <td>24,990 ₽</td>
-                                <td><span class="badge bg-success">Доставлен</span></td>
-                            </tr>
-                            <!-- Другие заказы -->
+                            {% if recent_orders %}
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.user.name }}</td>
+                                    <td>{{ order.total_amount }} ₽</td>
+                                    <td><span class="badge bg-{{ order.status_color }}">{{ order.status_text }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Нет заказов</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -82,11 +89,16 @@
             </div>
             <div class="card-body">
                 <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Смартфон X
-                        <span class="badge bg-primary rounded-pill">154 продажи</span>
-                    </li>
-                    <!-- Другие товары -->
+                    {% if popular_products %}
+                        {% for product in popular_products %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ product.name }}
+                            <span class="badge bg-primary rounded-pill">{{ product.sales }} продаж</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-center">Нет данных о продажах</li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

@@ -24,6 +24,10 @@ def create_app(config_class=Config):
     login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице.'
     login_manager.login_message_category = 'info'
 
+    # Контекстные процессоры
+    from app.context_processors import cart_processor
+    app.context_processor(cart_processor)
+
     # Регистрация blueprints
     from app.routes import register_blueprints
     register_blueprints(app)

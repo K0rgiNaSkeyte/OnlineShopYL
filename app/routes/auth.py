@@ -9,6 +9,8 @@ from . import auth_bp
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if current_user.is_admin:
+            return redirect(url_for('admin.dashboard'))
         return redirect(url_for('main.index'))
 
     form = LoginForm()
@@ -17,6 +19,12 @@ def login():
         if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
+            
+            # Если пользователь админ, перенаправляем на админ-панель
+            if user.is_admin:
+                return redirect(next_page or url_for('admin.dashboard'))
+            
+            # Иначе перенаправляем на главную страницу или запрошенную страницу
             return redirect(next_page or url_for('main.index'))
         flash('Неверный email или пароль', 'danger')
     return render_template('login.html', form=form)
@@ -25,6 +33,8 @@ def login():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
+        if current_user.is_admin:
+            return redirect(url_for('admin.dashboard'))
         return redirect(url_for('main.index'))
         
     form = RegistrationForm()

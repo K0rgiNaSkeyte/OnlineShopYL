@@ -41,7 +41,7 @@
                             <i class="bi bi-star text-warning"></i>
                         {% endif %}
                     {% endfor %}
-                    <span class="ms-1 text-muted">({{ product.reviews_count }} отзывов)</span>
+                    <span class="ms-1 text-muted">({{ product.reviews_count|default(0) }} отзывов)</span>
                 </div>
                 <span class="badge bg-success">{{ product.in_stock }} в наличии</span>
             </div>
@@ -63,7 +63,7 @@
                         <input type="text" class="form-control text-center quantity-input" value="1">
                         <button class="btn btn-outline-secondary plus-btn" type="button">+</button>
                     </div>
-                    <button class="btn btn-primary ms-3" id="addToCart">
+                    <button class="btn btn-primary ms-3 add-to-cart-btn" data-product-id="{{ product.id }}">
                         <i class="bi bi-cart-plus me-2"></i>В корзину
                     </button>
                 </div>
@@ -95,7 +95,7 @@
                     <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">Описание</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">Отзывы ({{ product.reviews_count }})</button>
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">Отзывы ({{ product.reviews_count|default(0) }})</button>
                 </li>
             </ul>
             <div class="tab-content p-3 border border-top-0 rounded-bottom">

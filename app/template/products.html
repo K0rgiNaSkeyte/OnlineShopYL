@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Товары</h2>
-    <a href="/admin/products/new" class="btn btn-primary">
+    <a href="{{ url_for('admin.add_product') }}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i> Добавить товар
     </a>
 </div>
@@ -18,8 +18,9 @@
         <div class="col-md-3">
             <select class="form-select">
                 <option>Все категории</option>
-                <option>Смартфоны</option>
-                <option>Ноутбуки</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
             </select>
         </div>
     </div>
@@ -38,43 +39,105 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>
-                        <img src="https://via.placeholder.com/50" width="50" height="50" class="rounded">
-                    </td>
-                    <td>Смартфон Galaxy S23</td>
-                    <td>79,990 ₽</td>
-                    <td>Смартфоны</td>
-                    <td><span class="badge bg-success">В наличии</span></td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="/admin/products/1" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <!-- Другие товары -->
+                {% if products %}
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.id }}</td>
+                        <td>
+                            <img src="{{ product.image_url or 'https://via.placeholder.com/50' }}" width="50" height="50" class="rounded">
+                        </td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.price }} ₽</td>
+                        <td>{{ product.category.name if product.category else 'Без категории' }}</td>
+                        <td>
+                            {% if product.in_stock %}
+                                <span class="badge bg-success">В наличии</span>
+                            {% else %}
+                                <span class="badge bg-danger">Нет в наличии</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ url_for('admin.edit_product', id=product.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger delete-product" data-product-id="{{ product.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">Нет товаров</td>
+                    </tr>
+                {% endif %}
                 </tbody>
             </table>
         </div>
 
+        {% if pagination %}
         <nav class="mt-4">
             <ul class="pagination justify-content-center">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1">Назад</a>
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.products', page=pagination.prev_num) if pagination.has_prev else '#' }}" tabindex="-1">Назад</a>
                 </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Вперед</a>
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin.products', page=page) }}">{{ page }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.products', page=pagination.next_num) if pagination.has_next else '#' }}">Вперед</a>
                 </li>
             </ul>
         </nav>
+        {% endif %}
     </div>
 </div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить этот товар?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработка кнопок удаления
+        const deleteButtons = document.querySelectorAll('.delete-product');
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                deleteForm.action = `/admin/products/delete/${productId}`;
+                deleteModal.show();
+            });
+        });
+    });
+</script>
 {% endblock %}
