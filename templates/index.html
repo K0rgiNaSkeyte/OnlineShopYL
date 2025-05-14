@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="display-4">Добро пожаловать в Корзиночку!</h1>
+    <p class="lead">Пожалуйста, войдите или зарегистрируйтесь, чтобы продолжить</p>
+
+    <div class="auth-buttons">
+        <a href="/login" class="btn btn-primary auth-btn">Вход</a>
+        <a href="/register" class="btn btn-outline-primary auth-btn">Регистрация</a>
+    </div>
+</div>
+
+<div class="row text-center mt-5">
+    <div class="col-md-4">
+        <h3>Широкий ассортимент</h3>
+        <p>Тысячи товаров на любой вкус</p>
+    </div>
+    <div class="col-md-4">
+        <h3>Быстрая доставка</h3>
+        <p>Получите заказ уже на следующий день</p>
+    </div>
+    <div class="col-md-4">
+        <h3>Надежная оплата</h3>
+        <p>Различные способы оплаты</p>
+    </div>
+</div>
+{% endblock %}

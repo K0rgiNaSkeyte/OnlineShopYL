@@ -1,0 +1,39 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="search-box mb-4">
+    <form class="d-flex" action="/search" method="get">
+        <input class="form-control me-2" type="search" placeholder="Поиск товаров..." aria-label="Search" name="q">
+        <button class="btn btn-outline-primary" type="submit">Найти</button>
+    </form>
+</div>
+
+<h2 class="mb-4">Популярные товары</h2>
+
+<div class="row">
+    {% for product in popular_products %}
+    <div class="col-md-4 mb-4">
+        <div class="card product-card h-100">
+            <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description }}</p>
+                <div class="mt-auto">
+                    <p class="text-danger fw-bold">{{ product.price }} ₽</p>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Рейтинг: {{ product.rating }}/5</span>
+                        <a href="#" class="btn btn-sm btn-primary">В корзину</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center mt-4">
+    <a href="/catalog" class="btn btn-primary">Перейти в каталог</a>
+</div>
+{% endblock %}

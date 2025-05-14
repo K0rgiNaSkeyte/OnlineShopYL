@@ -1,0 +1,219 @@
+{% extends "base_admin.html" %}
+
+{% block title %}{% if product %}Редактирование{% else %}Новый товар{% endif %}{% endblock %}
+
+{% block content %}
+<form class="needs-validation" novalidate>
+    <div class="row">
+        <!-- Основная информация -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Основные данные</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">Название товара *</label>
+                        <input type="text" class="form-control" id="productName"
+                               value="{{ product.name if product }}" required>
+                        <div class="invalid-feedback">Пожалуйста, укажите название</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productDescription" class="form-label">Описание</label>
+                        <textarea class="form-control" id="productDescription" rows="5">{{ product.description if product }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Полное описание</label>
+                        <div id="editor" style="height: 200px;">{{ product.full_description if product }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Характеристики -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Характеристики</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addSpec">
+                        <i class="bi bi-plus"></i> Добавить
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="specificationsContainer">
+                        {% if product and product.specifications %}
+                            {% for spec in product.specifications %}
+                            <div class="row mb-2 specification-row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" placeholder="Название"
+                                           value="{{ spec.name }}">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" placeholder="Значение"
+                                           value="{{ spec.value }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-outline-danger w-100 remove-spec">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="row mb-2 specification-row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" placeholder="Название">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" placeholder="Значение">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-outline-danger w-100 remove-spec">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Дополнительные параметры -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Параметры</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="productCategory" class="form-label">Категория *</label>
+                        <select class="form-select" id="productCategory" required>
+                            <option value="">Выберите категорию</option>
+                            <option value="1" {% if product and product.category_id == 1 %}selected{% endif %}>Смартфоны</option>
+                            <option value="2" {% if product and product.category_id == 2 %}selected{% endif %}>Ноутбуки</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productPrice" class="form-label">Цена *</label>
+                        <input type="number" class="form-control" id="productPrice"
+                               value="{{ product.price if product }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productOldPrice" class="form-label">Старая цена</label>
+                        <input type="number" class="form-control" id="productOldPrice"
+                               value="{{ product.old_price if product and product.old_price }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productStatus" class="form-label">Статус</label>
+                        <select class="form-select" id="productStatus">
+                            <option value="1" {% if product and product.status == 1 %}selected{% endif %}>В наличии</option>
+                            <option value="0" {% if product and product.status == 0 %}selected{% endif %}>Нет в наличии</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productRating" class="form-label">Рейтинг</label>
+                        <input type="number" class="form-control" id="productRating" min="0" max="5" step="0.1"
+                               value="{{ product.rating if product else '4.5' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Изображения -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Изображения</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Главное изображение *</label>
+                        <input type="file" class="form-control" id="mainImage" accept="image/*" required>
+                        {% if product and product.main_image %}
+                        <div class="mt-2">
+                            <img src="{{ product.main_image }}" class="img-thumbnail" width="100">
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Дополнительные изображения</label>
+                        <input type="file" class="form-control" id="additionalImages" multiple accept="image/*">
+                        <div class="mt-2" id="thumbnailsContainer">
+                            {% if product and product.images %}
+                                {% for image in product.images %}
+                                <img src="{{ image }}" class="img-thumbnail me-1" width="50">
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary px-4">
+            {% if product %}Сохранить изменения{% else %}Добавить товар{% endif %}
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<!-- Подключаем редактор (например, TinyMCE) -->
+<script src="https://cdn.tiny.cloud/1/l2imngmevo8joxabrh7hvrhbxac6q7r78svi8vb53cah8lll/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    // Инициализация редактора
+    tinymce.init({
+        selector: '#editor',
+        plugins: 'link lists table',
+        toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | table',
+        height: 300
+    });
+
+    // Добавление характеристик
+    document.getElementById('addSpec').addEventListener('click', function() {
+        const container = document.getElementById('specificationsContainer');
+        const newRow = document.createElement('div');
+        newRow.className = 'row mb-2 specification-row';
+        newRow.innerHTML = `
+            <div class="col-md-5">
+                <input type="text" class="form-control" placeholder="Название">
+            </div>
+            <div class="col-md-5">
+                <input type="text" class="form-control" placeholder="Значение">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger w-100 remove-spec">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(newRow);
+    });
+
+    // Удаление характеристик
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-spec')) {
+            e.target.closest('.specification-row').remove();
+        }
+    });
+
+    // Валидация формы
+    (function() {
+        'use strict';
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    })();
+</script>
+{% endblock %}
