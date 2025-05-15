@@ -19,6 +19,8 @@ class Review(db.Model):
 
     __table_args__ = (
         db.CheckConstraint('rating >= 1 AND rating <= 5', name='check_rating_bounds'),
+        # Ограничение: один пользователь - один отзыв на товар
+        db.UniqueConstraint('user_id', 'product_id', name='unique_user_product_review'),
     )
 
     def approve(self):

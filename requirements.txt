@@ -12,3 +12,4 @@ flask_restful
 flask-migrate
 requests
 Pillow
+gunicorn
