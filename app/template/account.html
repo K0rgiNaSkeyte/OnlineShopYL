@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-md-3 mb-4">
             <div class="list-group">
-                <a href="{{ url_for('account.index') }}" class="list-group-item list-group-item-action active">Профиль</a>
+                <a href="{{ url_for('account.profile') }}" class="list-group-item list-group-item-action active">Профиль</a>
                 <a href="{{ url_for('account.orders') }}" class="list-group-item list-group-item-action">Мои заказы</a>
                 <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action text-danger">Выход</a>
             </div>
@@ -29,45 +29,39 @@
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('account.profile') }}" enctype="multipart/form-data">
-                        {{ form.hidden_tag() if form }}
+                        {{ form.hidden_tag() }}
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <label for="name" class="form-label">Имя</label>
-                                {% if form %}
-                                    {{ form.name(class="form-control", id="name") }}
-                                    {% for error in form.name.errors %}
-                                        <div class="text-danger">{{ error }}</div>
-                                    {% endfor %}
-                                {% else %}
-                                    <input type="text" class="form-control" id="name" value="{{ current_user.name }}">
-                                {% endif %}
+                                {{ form.name(class="form-control", id="name") }}
+                                {% for error in form.name.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" value="{{ current_user.email }}" readonly>
+                            <div class="input-group">
+                                <input type="email" class="form-control" id="email" value="{{ current_user.email }}" name="email">
+                                <button type="submit" class="btn btn-outline-primary" formaction="{{ url_for('account.change_email') }}">Изменить email</button>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">Телефон</label>
-                            {% if form %}
-                                {{ form.phone(class="form-control", id="phone") }}
-                                {% for error in form.phone.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            {% else %}
-                                <input type="tel" class="form-control" id="phone" value="{{ current_user.phone }}">
-                            {% endif %}
+                            {{ form.phone(class="form-control", id="phone") }}
+                            {% for error in form.phone.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                         <div class="mb-3">
                             <label for="address" class="form-label">Адрес доставки</label>
-                            {% if form %}
-                                {{ form.address(class="form-control", id="address", rows="2") }}
-                                {% for error in form.address.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            {% else %}
-                                <textarea class="form-control" id="address" rows="2">{{ current_user.profile.address if current_user.profile else '' }}</textarea>
-                            {% endif %}
+                            {{ form.address(class="form-control", id="address", rows="2") }}
+                            {% for error in form.address.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
                         </div>
                     </form>
                 </div>

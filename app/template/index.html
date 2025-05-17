@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
+{% block title %}Добро пожаловать{% endblock %}
+
 {% block content %}
-<div class="hero-section">
+<div class="hero-section text-center my-5 py-5">
     <h1 class="display-4">Добро пожаловать в Корзиночку!</h1>
     <p class="lead">Пожалуйста, войдите или зарегистрируйтесь, чтобы продолжить</p>
 
-    <div class="auth-buttons">
-        <a href="/auth/login" class="btn btn-primary auth-btn">Вход</a>
-        <a href="/auth/register" class="btn btn-outline-primary auth-btn">Регистрация</a>
+    <div class="auth-buttons mt-4">
+        <a href="/auth/login" class="btn btn-primary btn-lg mx-2">Вход</a>
+        <a href="/auth/register" class="btn btn-outline-primary btn-lg mx-2">Регистрация</a>
     </div>
 </div>
 
@@ -25,4 +27,12 @@
         <p>Различные способы оплаты</p>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    header {
+        display: none;
+    }
+</style>
 {% endblock %}

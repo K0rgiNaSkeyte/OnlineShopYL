@@ -13,14 +13,63 @@ bp = Blueprint('account', __name__, url_prefix='/account')
 @login_required
 def index():
     """Главная страница личного кабинета"""
-    return render_template('account.html')
+    return redirect(url_for('account.profile'))
 
 @bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    """Страница профиля пользователя"""
-    # Просто отображаем профиль без возможности редактирования
-    return render_template('account.html')
+    """Страница профиля пользователя с возможностью редактирования"""
+    # Создаем профиль пользователя, если его еще нет
+    if not current_user.profile:
+        profile = UserProfile(user_id=current_user.id)
+        db.session.add(profile)
+        db.session.commit()
+    
+    form = ProfileForm()
+    
+    if request.method == 'GET':
+        # Заполняем форму текущими данными пользователя
+        form.name.data = current_user.name
+        form.phone.data = current_user.phone
+        if current_user.profile:
+            form.address.data = current_user.profile.address
+    
+    if form.validate_on_submit():
+        # Обновляем данные пользователя
+        current_user.name = form.name.data
+        current_user.phone = form.phone.data
+        
+        # Обновляем профиль
+        if current_user.profile:
+            current_user.profile.address = form.address.data
+        
+        # Сохраняем изменения
+        db.session.commit()
+        flash('Профиль успешно обновлен', 'success')
+        return redirect(url_for('account.profile'))
+    
+    return render_template('account.html', form=form)
+
+@bp.route('/change-email', methods=['POST'])
+@login_required
+def change_email():
+    """Изменение email пользователя"""
+    email = request.form.get('email')
+    
+    if not email:
+        flash('Email не может быть пустым', 'danger')
+        return redirect(url_for('account.profile'))
+    
+    # Проверяем, не занят ли email другим пользователем
+    existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
+    if existing_user:
+        flash('Этот email уже используется', 'danger')
+        return redirect(url_for('account.profile'))
+    
+    current_user.email = email
+    db.session.commit()
+    flash('Email успешно изменен', 'success')
+    return redirect(url_for('account.profile'))
 
 @bp.route('/orders')
 @login_required
