@@ -10,27 +10,34 @@
     </form>
 </div>
 
-<h2 class="mb-4">Популярные товары</h2>
-
 <div class="row">
-    {% for product in popular_products %}
-    <div class="col-md-4 mb-4">
-        <div class="card product-card h-100">
-            <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}">
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ product.name }}</h5>
-                <p class="card-text">{{ product.description }}</p>
-                <div class="mt-auto">
-                    <p class="text-danger fw-bold">{{ product.price }} ₽</p>
-                    <div class="d-flex justify-content-between">
-                        <span class="text-muted">Рейтинг: {{ product.rating }}/5</span>
-                        <a href="#" class="btn btn-sm btn-primary">В корзину</a>
-                    </div>
-                </div>
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3>Добро пожаловать в наш магазин!</h3>
+                <p class="lead">Здесь вы найдете широкий ассортимент товаров по выгодным ценам.</p>
+                <a href="/catalog" class="btn btn-primary">Перейти в каталог</a>
             </div>
         </div>
     </div>
-    {% endfor %}
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Ваши заказы</h5>
+            </div>
+            <div class="card-body">
+                <a href="/orders" class="btn btn-outline-primary w-100">Посмотреть историю заказов</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Корзина</h5>
+            </div>
+            <div class="card-body">
+                <a href="/cart" class="btn btn-outline-primary w-100">Перейти в корзину</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="text-center mt-4">

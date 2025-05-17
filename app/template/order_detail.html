@@ -1,0 +1,140 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Детали заказа{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Заказ #{{ order.id }}</h2>
+        <a href="{{ url_for('main.orders') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к заказам
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Товары в заказе</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Товар</th>
+                                    <th>Цена</th>
+                                    <th>Количество</th>
+                                    <th>Итого</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image_url %}
+                                            <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" 
+                                                 class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="bg-light me-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ item.product.name }}</h6>
+                                                {% if item.product.category %}
+                                                <small class="text-muted">{{ item.product.category.name }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ item.price }} ₽</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.price * item.quantity }} ₽</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Информация о заказе</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Статус заказа</p>
+                        {% if order.status == 'created' %}
+                        <span class="badge bg-secondary">Создан</span>
+                        {% elif order.status == 'paid' %}
+                        <span class="badge bg-primary">Оплачен</span>
+                        {% elif order.status == 'shipped' %}
+                        <span class="badge bg-info">Отправлен</span>
+                        {% elif order.status == 'completed' %}
+                        <span class="badge bg-success">Доставлен</span>
+                        {% elif order.status == 'cancelled' %}
+                        <span class="badge bg-danger">Отменен</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ order.status }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Дата заказа</p>
+                        <p class="mb-0 fw-bold">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Способ доставки</p>
+                        <p class="mb-0 fw-bold">{{ order.shipping_method }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Способ оплаты</p>
+                        <p class="mb-0 fw-bold">
+                            {% if order.payment_method == 'card' %}
+                            Банковская карта
+                            {% elif order.payment_method == 'cash' %}
+                            Наличные при получении
+                            {% elif order.payment_method == 'invoice' %}
+                            Оплата по счету
+                            {% else %}
+                            {{ order.payment_method }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Адрес доставки</p>
+                        <p class="mb-0 fw-bold">{{ order.clean_address }}</p>
+                    </div>
+                    {% if order.notes %}
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Примечания</p>
+                        <p class="mb-0">{{ order.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Сумма заказа</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Товары:</span>
+                        <span>{{ order.total_price }} ₽</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Итого:</span>
+                        <span>{{ order.total_price }} ₽</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

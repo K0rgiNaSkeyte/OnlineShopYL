@@ -1,0 +1,190 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Профиль пользователя{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Профиль пользователя</h2>
+    <div>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к списку
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Основная информация</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-placeholder rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 100px; height: 100px; font-size: 2rem;">
+                        {{ user.name[0].upper() if user.name else 'U' }}
+                    </div>
+                    <h4 class="mt-3">{{ user.name }}</h4>
+                    <p class="text-muted">
+                        {% if user.is_admin %}
+                        <span class="badge bg-primary">Администратор</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Покупатель</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">ID пользователя</label>
+                    <p class="form-control-plaintext">{{ user.id }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <p class="form-control-plaintext">{{ user.email }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Телефон</label>
+                    <p class="form-control-plaintext">{{ user.phone or 'Не указан' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Дата регистрации</label>
+                    <p class="form-control-plaintext">{{ user.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Последний вход</label>
+                    <p class="form-control-plaintext">{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Нет данных' }}</p>
+                </div>
+            </div>
+            <div class="card-footer bg-light d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="bi bi-trash"></i> Удалить пользователя
+                </button>
+                <button type="button" class="btn {% if user.is_admin %}btn-outline-secondary{% else %}btn-outline-primary{% endif %}" data-bs-toggle="modal" data-bs-target="#toggleAdminModal">
+                    {% if user.is_admin %}
+                    <i class="bi bi-person-dash"></i> Отозвать права
+                    {% else %}
+                    <i class="bi bi-person-plus"></i> Сделать админом
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Адрес доставки</h5>
+            </div>
+            <div class="card-body">
+                {% if user.profile and user.profile.address %}
+                <p>{{ user.profile.address }}</p>
+                {% else %}
+                <p class="text-muted">Адрес не указан</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Заказы пользователя</h5>
+            </div>
+            <div class="card-body">
+                {% if user.orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Дата</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in user.orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
+                                <td>{{ order.total_price }} ₽</td>
+                                <td>
+                                    {% if order.status == 'created' %}
+                                    <span class="badge bg-secondary">Создан</span>
+                                    {% elif order.status == 'paid' %}
+                                    <span class="badge bg-primary">Оплачен</span>
+                                    {% elif order.status == 'shipped' %}
+                                    <span class="badge bg-info">Отправлен</span>
+                                    {% elif order.status == 'completed' %}
+                                    <span class="badge bg-success">Доставлен</span>
+                                    {% elif order.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Отменен</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ order.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">У пользователя нет заказов</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить пользователя <strong>{{ user.email }}</strong>?</p>
+                <p class="text-danger">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form action="{{ url_for('admin.delete_user', id=user.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для изменения прав администратора -->
+<div class="modal fade" id="toggleAdminModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменение прав доступа</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if user.is_admin %}
+                <p>Вы действительно хотите отозвать права администратора у пользователя <strong>{{ user.email }}</strong>?</p>
+                {% else %}
+                <p>Вы действительно хотите назначить пользователя <strong>{{ user.email }}</strong> администратором?</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form action="{{ url_for('admin.toggle_admin', id=user.id) }}" method="post">
+                    <button type="submit" class="btn btn-primary">Подтвердить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

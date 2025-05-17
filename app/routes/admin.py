@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 from app.decorators import admin_required
-from app.models import Product, Order, User, Category, UserProfile
+from app.models import Product, Order, User, Category, UserProfile, CartItem
 from app.forms import ProductForm, CategoryForm
 from app import db
 from app.routes import admin_bp
@@ -168,6 +168,20 @@ def edit_product(id):
 def delete_product(id):
     """Удаление товара"""
     product = Product.query.get_or_404(id)
+    
+    # Проверяем, есть ли товар в корзинах пользователей
+    cart_items = CartItem.query.filter_by(product_id=id).all()
+    if cart_items:
+        # Удаляем товар из всех корзин
+        for item in cart_items:
+            db.session.delete(item)
+    
+    # Проверяем, есть ли товар в заказах
+    if product.order_items and len(product.order_items) > 0:
+        flash(f'Невозможно удалить товар "{product.name}", так как он присутствует в заказах', 'danger')
+        return redirect(url_for('admin.products'))
+    
+    # Удаляем товар
     db.session.delete(product)
     db.session.commit()
     flash('Товар успешно удален', 'success')
@@ -210,8 +224,139 @@ def add_category():
 @admin_required
 def orders():
     """Управление заказами"""
-    orders = Order.query.all()
-    return render_template('orders_admin.html', orders=orders)
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    status_filter = request.args.get('status')
+    search_query = request.args.get('q')
+    
+    # Базовый запрос
+    query = Order.query
+    
+    # Фильтр по статусу
+    if status_filter:
+        query = query.filter(Order.status == status_filter)
+    
+    # Поиск по ID заказа
+    if search_query and search_query.isdigit():
+        query = query.filter(Order.id == int(search_query))
+    
+    # Сортировка по дате создания (сначала новые)
+    query = query.order_by(Order.created_at.desc())
+    
+    # Пагинация
+    pagination = query.paginate(page=page, per_page=per_page)
+    orders = pagination.items
+    
+    # Добавляем статус и цвет для отображения
+    for order in orders:
+        if order.status == 'created':
+            order.status_text = 'Создан'
+            order.status_color = 'secondary'
+        elif order.status == 'paid':
+            order.status_text = 'Оплачен'
+            order.status_color = 'primary'
+        elif order.status == 'shipped':
+            order.status_text = 'Отправлен'
+            order.status_color = 'info'
+        elif order.status == 'completed':
+            order.status_text = 'Доставлен'
+            order.status_color = 'success'
+        elif order.status == 'cancelled':
+            order.status_text = 'Отменен'
+            order.status_color = 'danger'
+        else:
+            order.status_text = order.status
+            order.status_color = 'secondary'
+    
+    return render_template('orders_admin.html', 
+                          orders=orders, 
+                          pagination=pagination,
+                          status_filter=status_filter,
+                          search_query=search_query)
+
+
+@admin_bp.route('/orders/<int:order_id>')
+@admin_required
+def view_order(order_id):
+    """Просмотр заказа"""
+    order = Order.query.get_or_404(order_id)
+    
+    # Извлекаем информацию о способе доставки из адреса
+    shipping_method = "Стандартная доставка"
+    notes = ""
+    
+    if order.shipping_address and "Способ доставки:" in order.shipping_address:
+        address_parts = order.shipping_address.split("\n\n")
+        if len(address_parts) > 1:
+            shipping_info = address_parts[1].split("\n")
+            for info in shipping_info:
+                if info.startswith("Способ доставки:"):
+                    shipping_method = info.replace("Способ доставки:", "").strip()
+                elif info.startswith("Примечания:"):
+                    notes = info.replace("Примечания:", "").strip()
+            
+            # Очищаем адрес от дополнительной информации
+            order.clean_address = address_parts[0]
+        else:
+            order.clean_address = order.shipping_address
+    else:
+        order.clean_address = order.shipping_address
+    
+    # Добавляем информацию к объекту заказа
+    order.shipping_method = shipping_method
+    order.notes = notes
+    
+    # Добавляем статус и цвет для отображения
+    if order.status == 'created':
+        order.status_text = 'Создан'
+        order.status_color = 'secondary'
+    elif order.status == 'paid':
+        order.status_text = 'Оплачен'
+        order.status_color = 'primary'
+    elif order.status == 'shipped':
+        order.status_text = 'Отправлен'
+        order.status_color = 'info'
+    elif order.status == 'completed':
+        order.status_text = 'Доставлен'
+        order.status_color = 'success'
+    elif order.status == 'cancelled':
+        order.status_text = 'Отменен'
+        order.status_color = 'danger'
+    else:
+        order.status_text = order.status
+        order.status_color = 'secondary'
+    
+    return render_template('order_admin_detail.html', order=order)
+
+
+@admin_bp.route('/orders/<int:order_id>/status', methods=['POST'])
+@admin_required
+def update_order_status(order_id):
+    """Изменение статуса заказа"""
+    order = Order.query.get_or_404(order_id)
+    new_status = request.form.get('status')
+    
+    # Проверяем, что статус допустимый
+    valid_statuses = ['created', 'paid', 'shipped', 'completed', 'cancelled']
+    if new_status not in valid_statuses:
+        flash('Недопустимый статус заказа', 'danger')
+        return redirect(url_for('admin.view_order', order_id=order_id))
+    
+    # Обновляем статус
+    order.status = new_status
+    db.session.commit()
+    
+    # Определяем текст статуса для сообщения
+    status_text = {
+        'created': 'Создан',
+        'paid': 'Оплачен',
+        'shipped': 'Отправлен',
+        'completed': 'Доставлен',
+        'cancelled': 'Отменен'
+    }.get(new_status, new_status)
+    
+    flash(f'Статус заказа №{order_id} изменен на "{status_text}"', 'success')
+    return redirect(url_for('admin.view_order', order_id=order_id))
 
 
 @admin_bp.route('/users')
