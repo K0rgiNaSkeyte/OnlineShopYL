@@ -13,5 +13,3 @@ flask-migrate
 requests
 Pillow
 gunicorn
-waitress
-psycopg2-binary

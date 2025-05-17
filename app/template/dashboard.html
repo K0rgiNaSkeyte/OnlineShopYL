@@ -3,7 +3,17 @@
 {% block title %}Дашборд{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Дашборд</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Дашборд</h2>
+    <div>
+        <a href="{{ url_for('admin.add_product') }}" class="btn btn-primary me-2">
+            <i class="bi bi-plus-lg"></i> Добавить товар
+        </a>
+        <a href="{{ url_for('admin.add_category') }}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Добавить категорию
+        </a>
+    </div>
+</div>
 
 <div class="row mb-4">
     <div class="col-md-3">
@@ -47,8 +57,9 @@
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Последние заказы</h5>
+                <a href="{{ url_for('admin.orders') }}" class="btn btn-sm btn-outline-primary">Все заказы</a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -67,7 +78,7 @@
                                 <tr>
                                     <td>#{{ order.id }}</td>
                                     <td>{{ order.user.name }}</td>
-                                    <td>{{ order.total_amount }} ₽</td>
+                                    <td>{{ order.total_price }} ₽</td>
                                     <td><span class="badge bg-{{ order.status_color }}">{{ order.status_text }}</span></td>
                                 </tr>
                                 {% endfor %}
@@ -84,8 +95,9 @@
     </div>
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Популярные товары</h5>
+                <a href="{{ url_for('admin.products') }}" class="btn btn-sm btn-outline-primary">Все товары</a>
             </div>
             <div class="card-body">
                 <ul class="list-group">

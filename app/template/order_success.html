@@ -1,0 +1,71 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Заказ оформлен{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="mb-3">Заказ успешно оформлен!</h2>
+                    <p class="lead mb-4">Спасибо за ваш заказ. Номер вашего заказа: <strong>#{{ order.id }}</strong></p>
+                    <p class="mb-4">Мы отправили подтверждение на ваш email. Вы можете отслеживать статус заказа в личном кабинете.</p>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Информация о заказе</h5>
+                        </div>
+                        <div class="card-body text-start">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Дата заказа:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                                    <p><strong>Статус:</strong> 
+                                        {% if order.status == 'created' %}
+                                        <span class="badge bg-secondary">Создан</span>
+                                        {% elif order.status == 'paid' %}
+                                        <span class="badge bg-primary">Оплачен</span>
+                                        {% elif order.status == 'shipped' %}
+                                        <span class="badge bg-info">Отправлен</span>
+                                        {% elif order.status == 'completed' %}
+                                        <span class="badge bg-success">Доставлен</span>
+                                        {% elif order.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Отменен</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ order.status }}</span>
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>Способ доставки:</strong> {{ order.shipping_method }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Способ оплаты:</strong> 
+                                        {% if order.payment_method == 'card' %}
+                                        Банковская карта
+                                        {% elif order.payment_method == 'cash' %}
+                                        Наличные при получении
+                                        {% elif order.payment_method == 'invoice' %}
+                                        Оплата по счету
+                                        {% else %}
+                                        {{ order.payment_method }}
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>Сумма заказа:</strong> {{ order.total_price }} ₽</p>
+                                    <p><strong>Адрес доставки:</strong> {{ order.clean_address }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('main.orders') }}" class="btn btn-primary">Мои заказы</a>
+                        <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary">Продолжить покупки</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

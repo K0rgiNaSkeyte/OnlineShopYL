@@ -6,7 +6,10 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Пользователи</h2>
     <div class="col-md-4">
-        <input type="text" class="form-control" placeholder="Поиск по email или имени...">
+        <form action="{{ url_for('admin.users') }}" method="get" class="d-flex">
+            <input type="text" name="q" class="form-control" placeholder="Поиск по email..." value="{{ search_query }}">
+            <button type="submit" class="btn btn-primary ms-2">Поиск</button>
+        </form>
     </div>
 </div>
 
@@ -14,11 +17,16 @@
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Список пользователей</h5>
         <div>
-            <select class="form-select form-select-sm" style="width: 150px;">
-                <option selected>Все пользователи</option>
-                <option>Администраторы</option>
-                <option>Покупатели</option>
-            </select>
+            <form action="{{ url_for('admin.users') }}" method="get" class="d-flex align-items-center">
+                {% if search_query %}
+                <input type="hidden" name="q" value="{{ search_query }}">
+                {% endif %}
+                <select name="role" class="form-select form-select-sm" style="width: 150px;" onchange="this.form.submit()">
+                    <option value="" {% if not role_filter %}selected{% endif %}>Все пользователи</option>
+                    <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Администраторы</option>
+                    <option value="user" {% if role_filter == 'user' %}selected{% endif %}>Покупатели</option>
+                </select>
+            </form>
         </div>
     </div>
     <div class="card-body">
@@ -36,64 +44,111 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for user in users %}
                     <tr>
-                        <td>1</td>
-                        <td>Алексей Смирнов</td>
-                        <td>alex@example.com</td>
-                        <td>+7 (900) 123-45-67</td>
-                        <td>12.04.2023</td>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.phone }}</td>
+                        <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
                         <td>
+                            {% if user.is_admin %}
                             <span class="badge bg-primary">Администратор</span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="/admin/users/1" class="btn btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <button class="btn btn-outline-danger">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- Другие пользователи -->
-                    <tr>
-                        <td>2</td>
-                        <td>Мария Иванова</td>
-                        <td>maria@example.com</td>
-                        <td>+7 (900) 765-43-21</td>
-                        <td>05.05.2023</td>
-                        <td>
+                            {% else %}
                             <span class="badge bg-secondary">Покупатель</span>
+                            {% endif %}
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="/admin/users/2" class="btn btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
+                                <a href="{{ url_for('admin.view_user', id=user.id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
                                 </a>
-                                <button class="btn btn-outline-danger">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#toggleAdminModal{{ user.id }}">
+                                    {% if user.is_admin %}
+                                    <i class="bi bi-person-dash"></i>
+                                    {% else %}
+                                    <i class="bi bi-person-plus"></i>
+                                    {% endif %}
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
+                            
+                            <!-- Модальное окно для подтверждения удаления -->
+                            <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Подтверждение удаления</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Вы действительно хотите удалить пользователя <strong>{{ user.email }}</strong>?</p>
+                                            <p class="text-danger">Это действие нельзя отменить.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                            <form action="{{ url_for('admin.delete_user', id=user.id) }}" method="post">
+                                                <button type="submit" class="btn btn-danger">Удалить</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Модальное окно для изменения прав администратора -->
+                            <div class="modal fade" id="toggleAdminModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Изменение прав доступа</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% if user.is_admin %}
+                                            <p>Вы действительно хотите отозвать права администратора у пользователя <strong>{{ user.email }}</strong>?</p>
+                                            {% else %}
+                                            <p>Вы действительно хотите назначить пользователя <strong>{{ user.email }}</strong> администратором?</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                            <form action="{{ url_for('admin.toggle_admin', id=user.id) }}" method="post">
+                                                <button type="submit" class="btn btn-primary">Подтвердить</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
 
+        {% if pagination.pages > 1 %}
         <nav class="mt-4">
             <ul class="pagination justify-content-center">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1">Назад</a>
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.users', page=pagination.prev_num, q=search_query, role=role_filter) if pagination.has_prev else '#' }}" tabindex="-1">Назад</a>
                 </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Вперед</a>
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin.users', page=page_num, q=search_query, role=role_filter) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.users', page=pagination.next_num, q=search_query, role=role_filter) if pagination.has_next else '#' }}">Вперед</a>
                 </li>
             </ul>
         </nav>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

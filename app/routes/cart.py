@@ -108,6 +108,8 @@ def remove_from_cart(item_id):
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify({'success': True, 'cart_count': cart_count})
+    
+    flash('Товар удален из корзины', 'success')
     return redirect(url_for('main.cart'))
 
 @main_bp.route('/cart/clear', methods=['POST'])
@@ -118,6 +120,7 @@ def clear_cart():
     if cart:
         CartItem.query.filter_by(cart_id=cart.id).delete()
         db.session.commit()
+        flash('Корзина очищена', 'success')
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify({'success': True, 'cart_count': 0})

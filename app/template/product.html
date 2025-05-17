@@ -17,14 +17,7 @@
         <!-- Галерея изображений -->
         <div class="col-md-6">
             <div class="card mb-3">
-                <img src="{{ product.main_image }}" class="card-img-top p-3" alt="{{ product.name }}" id="mainImage">
-            </div>
-            <div class="d-flex thumbnails">
-                {% for image in product.images %}
-                <div class="me-2 cursor-pointer" onclick="document.getElementById('mainImage').src='{{ image }}'">
-                    <img src="{{ image }}" alt="Thumbnail" class="img-thumbnail" width="80">
-                </div>
-                {% endfor %}
+                <img src="{{ product.image_url }}" class="card-img-top p-3" alt="{{ product.name }}" id="mainImage">
             </div>
         </div>
 
@@ -41,9 +34,11 @@
                             <i class="bi bi-star text-warning"></i>
                         {% endif %}
                     {% endfor %}
-                    <span class="ms-1 text-muted">({{ product.reviews_count|default(0) }} отзывов)</span>
+                    <span class="ms-1 text-muted">({{ product.reviews|length }} отзывов)</span>
                 </div>
-                <span class="badge bg-success">{{ product.in_stock }} в наличии</span>
+                <span class="badge {% if product.in_stock and product.stock > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if product.in_stock and product.stock > 0 %}В наличии{% else %}Нет в наличии{% endif %}
+                </span>
             </div>
 
             <div class="mb-4">
@@ -51,66 +46,54 @@
                 <div class="text-muted text-decoration-line-through mb-1">{{ product.old_price }} ₽</div>
                 {% endif %}
                 <div class="fs-3 fw-bold text-danger">{{ product.price }} ₽</div>
-                {% if product.discount %}
-                <span class="badge bg-danger">-{{ product.discount }}%</span>
-                {% endif %}
             </div>
 
             <div class="mb-4">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="input-group" style="width: 150px;">
-                        <button class="btn btn-outline-secondary minus-btn" type="button">-</button>
-                        <input type="text" class="form-control text-center quantity-input" value="1">
-                        <button class="btn btn-outline-secondary plus-btn" type="button">+</button>
+                <form action="{{ url_for('main.add_to_cart_route') }}" method="post">
+                    <div class="d-flex align-items-center mb-3">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <div class="input-group" style="width: 150px;">
+                            <button class="btn btn-outline-secondary minus-btn" type="button" onclick="decrementQuantity()">-</button>
+                            <input type="number" name="quantity" class="form-control text-center quantity-input" value="1" min="1" max="{{ product.stock }}">
+                            <button class="btn btn-outline-secondary plus-btn" type="button" onclick="incrementQuantity()">+</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary ms-3" {% if not product.in_stock or product.stock <= 0 %}disabled{% endif %}>
+                            <i class="bi bi-cart-plus me-2"></i>В корзину
+                        </button>
                     </div>
-                    <button class="btn btn-primary ms-3 add-to-cart-btn" data-product-id="{{ product.id }}">
-                        <i class="bi bi-cart-plus me-2"></i>В корзину
-                    </button>
-                </div>
+                </form>
+                {% if not product.in_stock or product.stock <= 0 %}
+                <div class="text-danger">Товар временно отсутствует</div>
+                {% endif %}
             </div>
 
             <div class="card mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Характеристики</h5>
+                    <h5 class="mb-0">Описание</h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-sm">
-                        {% for spec in product.specifications %}
-                        <tr>
-                            <td class="text-muted" width="40%">{{ spec.name }}</td>
-                            <td>{{ spec.value }}</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
+                    <p>{{ product.description }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Описание и отзывы -->
+    <!-- Отзывы -->
     <div class="row mt-4">
         <div class="col-12">
-            <ul class="nav nav-tabs" id="productTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">Описание</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">Отзывы ({{ product.reviews_count|default(0) }})</button>
-                </li>
-            </ul>
-            <div class="tab-content p-3 border border-top-0 rounded-bottom">
-                <div class="tab-pane fade show active" id="description" role="tabpanel">
-                    {{ product.description|safe }}
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Отзывы ({{ product.reviews|length }})</h5>
                 </div>
-                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                <div class="card-body">
                     {% if product.reviews %}
                     <div class="mb-4">
                         {% for review in product.reviews %}
                         <div class="card mb-3">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <h6 class="mb-0">{{ review.author }}</h6>
-                                    <small class="text-muted">{{ review.date }}</small>
+                                    <h6 class="mb-0">{{ review.user.name }}</h6>
+                                    <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
                                 </div>
                                 <div class="mb-2">
                                     {% for star in range(5) %}
@@ -138,7 +121,7 @@
                             <h5 class="mb-0">Оставить отзыв</h5>
                         </div>
                         <div class="card-body">
-                            <form>
+                            <form action="{{ url_for('main.add_review', product_id=product.id) }}" method="post">
                                 <div class="mb-3">
                                     <label class="form-label">Ваша оценка</label>
                                     <div class="rating-stars">
@@ -161,4 +144,39 @@
         </div>
     </div>
 </div>
+
+<script>
+    function decrementQuantity() {
+        const input = document.querySelector('.quantity-input');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+    
+    function incrementQuantity() {
+        const input = document.querySelector('.quantity-input');
+        const max = parseInt(input.getAttribute('max'));
+        if (parseInt(input.value) < max) {
+            input.value = parseInt(input.value) + 1;
+        }
+    }
+    
+    // Обработка рейтинга в отзывах
+    document.addEventListener('DOMContentLoaded', function() {
+        const stars = document.querySelectorAll('.star-rating');
+        if (stars.length > 0) {
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    document.getElementById('ratingValue').value = value;
+
+                    // Подсветка звезд
+                    document.querySelectorAll('.star-rating').forEach(s => {
+                        s.classList.toggle('active', s.getAttribute('data-value') <= value);
+                    });
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}
