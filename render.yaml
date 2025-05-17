@@ -3,7 +3,7 @@ services:
     name: onlineshop-yl
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app
+    startCommand: waitress-serve --port=$PORT wsgi:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
