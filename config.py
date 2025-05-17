@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -10,7 +11,11 @@ class Config:
     CSRF_ENABLED = True
 
     # База данных
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or 'sqlite:///shop.db'
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL or 'sqlite:///shop.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Настройки Flask-Login
