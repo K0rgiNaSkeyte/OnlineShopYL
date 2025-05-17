@@ -2,14 +2,22 @@ from flask import Flask
 from app.extensions import db, migrate, login_manager
 import os
 
-def create_app(config_name='production'):
+def create_app(config_name=None):
     app = Flask(__name__, 
                 template_folder=os.path.join('template'),
                 static_folder=os.path.join('static'))
     
     # Загрузка конфигурации из config.py
-    from config import config
-    app.config.from_object(config[config_name])
+    if config_name is None:
+        config_name = os.getenv('FLASK_ENV', 'production')
+    
+    if isinstance(config_name, str):
+        from config import config
+        config_class = config.get(config_name, config['default'])
+        app.config.from_object(config_class)
+    else:
+        # Если передан объект конфигурации напрямую
+        app.config.from_object(config_name)
 
     # Инициализация расширений
     db.init_app(app)
