@@ -18,3 +18,4 @@ Pillow~=10.3.0
 gunicorn~=22.0.0
 waitress~=3.0.2
 email-validator~=2.1.0.post1
+psycopg2-binary==2.9.5
