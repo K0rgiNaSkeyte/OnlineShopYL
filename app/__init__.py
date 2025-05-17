@@ -1,13 +1,15 @@
 from flask import Flask
-from config import Config
 from app.extensions import db, migrate, login_manager
 import os
 
-def create_app(config_class=Config):
+def create_app(config_name='production'):
     app = Flask(__name__, 
                 template_folder=os.path.join('template'),
                 static_folder=os.path.join('static'))
-    app.config.from_object(config_class)
+    
+    # Загрузка конфигурации из config.py
+    from config import config
+    app.config.from_object(config[config_name])
 
     # Инициализация расширений
     db.init_app(app)
