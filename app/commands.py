@@ -13,11 +13,16 @@ def register_commands(app):
     @click.confirmation_option(prompt='Вы уверены? Это удалит все данные!')
     @with_appcontext
     def init_db():
-        """Инициализация БД с тестовыми данными"""
+        """Инициализация пустой БД"""
         # Удаление и создание таблиц
         db.drop_all()
         db.create_all()
-
+        click.echo('База данных инициализирована')
+        
+    @app.cli.command('init-test-data')
+    @with_appcontext
+    def init_test_data():
+        """Заполнение БД тестовыми данными"""
         # Создание тестовых данных
         admin = User(
             email='admin@example.com',
@@ -100,4 +105,4 @@ def register_commands(app):
         db.session.add(order_item)
         db.session.commit()
 
-        click.echo('База данных инициализирована с тестовыми данными')
+        click.echo('База данных заполнена тестовыми данными')
