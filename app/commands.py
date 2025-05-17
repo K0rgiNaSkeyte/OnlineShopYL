@@ -19,6 +19,20 @@ def register_commands(app):
         db.create_all()
         click.echo('База данных инициализирована')
         
+    @app.cli.command('make-admin')
+    @click.argument('email')
+    @with_appcontext
+    def make_admin(email):
+        """Назначить пользователя администратором по email"""
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            click.echo(f'Пользователь с email {email} не найден')
+            return
+        
+        user.is_admin = True
+        db.session.commit()
+        click.echo(f'Пользователь {user.name} ({user.email}) теперь администратор')
+    
     @app.cli.command('init-test-data')
     @with_appcontext
     def init_test_data():
