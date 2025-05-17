@@ -48,6 +48,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link sidebar-link py-3" href="/admin/categories">
+                            <i class="bi bi-tags me-2"></i>Категории
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link sidebar-link py-3" href="/admin/orders">
                             <i class="bi bi-receipt me-2"></i>Заказы
                         </a>
@@ -81,6 +86,17 @@
                 </nav>
 
                 <div class="p-4">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
                     {% block content %}{% endblock %}
                 </div>
             </div>

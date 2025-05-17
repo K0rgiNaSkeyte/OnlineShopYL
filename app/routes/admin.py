@@ -220,6 +220,65 @@ def add_category():
     return render_template('category_edit.html', form=form, title='Добавление категории')
 
 
+@admin_bp.route('/categories/edit/<int:id>', methods=['GET', 'POST'])
+@admin_required
+def edit_category(id):
+    """Редактирование категории"""
+    category = Category.query.get_or_404(id)
+    form = CategoryForm(obj=category)
+    
+    # Добавляем пустой выбор для категорий верхнего уровня
+    choices = [(0, 'Нет (категория верхнего уровня)')]
+    # Исключаем текущую категорию и ее дочерние категории из списка
+    for c in Category.query.filter(Category.id != id).all():
+        # Проверяем, что категория не является дочерней для редактируемой
+        if not (c.parent_id == id):
+            choices.append((c.id, c.name))
+    
+    form.parent_id.choices = choices
+    
+    # Устанавливаем значение parent_id для формы
+    if category.parent_id:
+        form.parent_id.data = category.parent_id
+    else:
+        form.parent_id.data = 0
+
+    if form.validate_on_submit():
+        category.name = form.name.data
+        category.description = form.description.data
+        category.parent_id = form.parent_id.data if form.parent_id.data > 0 else None
+        
+        db.session.commit()
+        flash('Категория успешно обновлена', 'success')
+        return redirect(url_for('admin.categories'))
+
+    return render_template('category_edit.html', form=form, category=category, title='Редактирование категории')
+
+
+@admin_bp.route('/categories/delete/<int:id>', methods=['POST'])
+@admin_required
+def delete_category(id):
+    """Удаление категории"""
+    category = Category.query.get_or_404(id)
+    
+    # Проверяем, есть ли товары в этой категории
+    if category.products and len(category.products) > 0:
+        flash(f'Невозможно удалить категорию "{category.name}", так как в ней есть товары', 'danger')
+        return redirect(url_for('admin.categories'))
+    
+    # Проверяем, есть ли дочерние категории
+    child_categories = Category.query.filter_by(parent_id=id).all()
+    if child_categories:
+        flash(f'Невозможно удалить категорию "{category.name}", так как у нее есть дочерние категории', 'danger')
+        return redirect(url_for('admin.categories'))
+    
+    # Удаляем категорию
+    db.session.delete(category)
+    db.session.commit()
+    flash('Категория успешно удалена', 'success')
+    return redirect(url_for('admin.categories'))
+
+
 @admin_bp.route('/orders')
 @admin_required
 def orders():
