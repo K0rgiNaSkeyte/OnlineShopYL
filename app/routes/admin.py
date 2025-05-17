@@ -1,7 +1,7 @@
-from flask import render_template, redirect, url_for, flash, request
-from flask_login import login_required
+from flask import render_template, redirect, url_for, flash, request, abort
+from flask_login import login_required, current_user
 from app.decorators import admin_required
-from app.models import Product, Order, User, Category
+from app.models import Product, Order, User, Category, UserProfile
 from app.forms import ProductForm, CategoryForm
 from app import db
 from app.routes import admin_bp
@@ -218,5 +218,98 @@ def orders():
 @admin_required
 def users():
     """Управление пользователями"""
-    users = User.query.all()
-    return render_template('users.html', users=users)
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    search_query = request.args.get('q', '')
+    
+    # Базовый запрос
+    query = User.query
+    
+    # Поиск по email
+    if search_query:
+        query = query.filter(User.email.ilike(f'%{search_query}%'))
+    
+    # Фильтр по роли
+    role_filter = request.args.get('role')
+    if role_filter == 'admin':
+        query = query.filter(User.is_admin == True)
+    elif role_filter == 'user':
+        query = query.filter(User.is_admin == False)
+    
+    # Пагинация
+    pagination = query.paginate(page=page, per_page=per_page)
+    users = pagination.items
+    
+    return render_template('users.html', 
+                          users=users, 
+                          pagination=pagination,
+                          search_query=search_query,
+                          role_filter=role_filter)
+
+
+@admin_bp.route('/users/<int:id>')
+@admin_required
+def view_user(id):
+    """Просмотр профиля пользователя"""
+    user = User.query.get_or_404(id)
+    return render_template('user_profile.html', user=user)
+
+
+@admin_bp.route('/users/delete/<int:id>', methods=['POST'])
+@admin_required
+def delete_user(id):
+    """Удаление пользователя"""
+    user = User.query.get_or_404(id)
+    
+    # Проверка, что админ не удаляет сам себя
+    if user.id == current_user.id:
+        flash('Вы не можете удалить свой аккаунт', 'danger')
+        return redirect(url_for('admin.users'))
+    
+    # Проверяем, есть ли у пользователя заказы
+    if user.orders and len(user.orders) > 0:
+        flash(f'Невозможно удалить пользователя {user.email}, так как у него есть заказы', 'danger')
+        return redirect(url_for('admin.users'))
+    
+    # Удаляем отзывы пользователя
+    if hasattr(user, 'reviews'):
+        for review in user.reviews:
+            db.session.delete(review)
+    
+    # Удаляем корзину пользователя
+    if user.cart:
+        # Удаляем все элементы корзины
+        for item in user.cart.items:
+            db.session.delete(item)
+        db.session.delete(user.cart)
+    
+    # Удаляем профиль пользователя, если он существует
+    if user.profile:
+        db.session.delete(user.profile)
+    
+    # Удаляем пользователя
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(f'Пользователь {user.email} успешно удален', 'success')
+    return redirect(url_for('admin.users'))
+
+
+@admin_bp.route('/users/toggle-admin/<int:id>', methods=['POST'])
+@admin_required
+def toggle_admin(id):
+    """Выдача/отзыв прав администратора"""
+    user = User.query.get_or_404(id)
+    
+    # Проверка, что админ не снимает права с самого себя
+    if user.id == current_user.id:
+        flash('Вы не можете изменить свои права администратора', 'danger')
+        return redirect(url_for('admin.users'))
+    
+    # Инвертируем статус администратора
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    
+    action = "выданы" if user.is_admin else "отозваны"
+    flash(f'Права администратора {action} для пользователя {user.email}', 'success')
+    return redirect(url_for('admin.users'))
